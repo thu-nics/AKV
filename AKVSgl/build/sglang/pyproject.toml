@@ -1,0 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-rust>=1.11", "setuptools-scm>=8.0", "torch==2.13.0", "wheel", "protoc-wheel-0==30.2"]
+build-backend = "backend"
+backend-path = ["."]
+
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "backend.py" }, { file = "../../_build.py" }, { file = "../../sglang.patch" }, { file = "../../sglang/**/*.py" }, { file = "../../../pyproject.toml" }, { file = "../../.sglang/.akv-input" }]

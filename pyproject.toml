@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AKVSgl"
+version = "0.1.0"
+description = "Drop and reposition KV cache through SGLang's stateless API"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+dependencies = [
+    "sglang==0.5.20+akv",
+    "sglang-router==0.3.2+akv",
+    "mooncake-transfer-engine-cuda13==0.3.13",
+]
+
+[tool.uv.sources]
+sglang = { path = "AKVSgl/build/sglang", editable = true }
+sglang-router = { path = "AKVSgl/build/gateway" }
+
+[tool.setuptools]
+packages = ["AKVSgl"]
+
+[tool.setuptools.package-data]
+AKVSgl = ["sglang.patch", "sglang/**/*.py", "build/*/pyproject.toml", "build/*/backend.py"]
+
+[tool.akv]
+upstream = "https://github.com/sgl-project/sglang.git"
+base = "94602c9c2b7cbdb8efd5c52802dac6a1c180089e"
+base-tree = "0fa78f29657df0caa5520eca15bde377d19b9411"
+tree = "06cd8f35bc78679d23ff050f6155fdb96a3f83c4"
+patch-sha256 = "29da4cbb8950527cad9c85ea881731646d1e416b1a069b51ef85ebe133066ff1"

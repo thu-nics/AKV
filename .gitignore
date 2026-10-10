@@ -1,0 +1,10 @@
+akv/
+.venv/
+AKVSgl/.sglang/
+AKVSgl/.sglang.*
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+/AKVSgl/build/*/dist/
+/build/
