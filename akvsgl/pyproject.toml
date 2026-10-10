@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "akvsgl"
 version = "0.1.0"
 description = "Drop and reposition KV cache through SGLang's stateless API"
-readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 dependencies = [
