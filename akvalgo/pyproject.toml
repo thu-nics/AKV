@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "akvalgo"
+version = "0.2.0"
+description = "Drop and reposition policies with a native AKV System client"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.optional-dependencies]
+tokenization = [
+    "tokenizers>=0.22,<0.24",
+    "Jinja2>=3.1",
+    "openai-harmony==0.0.8",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.4", "pytest-cov>=6", "debugpy>=1.8", "ruff>=0.12"]
+
+[tool.setuptools]
+packages = ["akvalgo", "akvalgo.backends", "akvalgo.models"]
+package-dir = { akvalgo = "." }
+include-package-data = false
