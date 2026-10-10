@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AKVSgl"
+name = "akvsgl"
 version = "0.1.0"
 description = "Drop and reposition KV cache through SGLang's stateless API"
 readme = "README.md"
@@ -16,14 +16,14 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-sglang = { path = "AKVSgl/build/sglang", editable = true }
-sglang-router = { path = "AKVSgl/build/gateway" }
+sglang = { path = "akvsgl/build/sglang", editable = true }
+sglang-router = { path = "akvsgl/build/gateway" }
 
 [tool.setuptools]
-packages = ["AKVSgl"]
+packages = ["akvsgl"]
 
 [tool.setuptools.package-data]
-AKVSgl = ["sglang.patch", "sglang/**/*.py", "build/*/pyproject.toml", "build/*/backend.py"]
+akvsgl = ["sglang.patch", "sglang/**/*.py", "build/*/pyproject.toml", "build/*/backend.py"]
 
 [tool.akv]
 upstream = "https://github.com/sgl-project/sglang.git"

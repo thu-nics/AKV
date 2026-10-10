@@ -131,7 +131,7 @@ def prepare():
             if _git(staging, "write-tree") != CONFIG["base-tree"]:
                 raise RuntimeError("Upstream archive does not match the pinned official source tree")
             commit = _git(
-                staging, "-c", "user.name=AKVSgl", "-c", "user.email=build@localhost",
+                staging, "-c", "user.name=akvsgl", "-c", "user.email=build@localhost",
                 "-c", "commit.gpgsign=false", "commit-tree", CONFIG["base-tree"],
                 "-m", f"Official SGLang source archive: {CONFIG['base']}",
             )
@@ -218,7 +218,7 @@ def _sdist(kind, directory, config_settings=None):
         # Standalone archives carry the same immutable preparation configuration.
         project += "\n[tool.akv]\n" + "".join(f'{key} = "{value}"\n' for key, value in CONFIG.items())
         (stage / "pyproject.toml").write_text(project)
-        assets = stage / "AKVSgl"
+        assets = stage / "akvsgl"
         assets.mkdir()
         for name in ("_build.py", "__init__.py", "sglang.patch"):
             shutil.copy2(ASSETS / name, assets / name)

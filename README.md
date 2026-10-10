@@ -1,10 +1,10 @@
-# AKVSgl
+# akvsgl
 
-AKVSGLang brings cache engineering to SGLang, letting agents drop selected KV states and reposition retained ones through a stateless API while reusing corresponding cache to reduce long-horizon reasoning costs.
+akvsgl brings cache engineering to SGLang, letting agents drop selected KV states and reposition retained ones through a stateless API while reusing corresponding cache to reduce long-horizon reasoning costs.
 
 ## Environment Setup
 
-AKVSgl 0.1.0 applies source patches to a fixed SGLang v0.5.20 revision. Use Linux with an NVIDIA GPU and the upstream CUDA 13 software stack. In addition to SGLang's requirements, Context kernels need a C++20 compiler (GCC 13 is validated).
+akvsgl 0.1.0 applies source patches to a fixed SGLang v0.5.20 revision. Use Linux with an NVIDIA GPU and the upstream CUDA 13 software stack. In addition to SGLang's requirements, Context kernels need a C++20 compiler (GCC 13 is validated).
 
 Install Rust and Cargo if unavailable:
 
@@ -23,13 +23,13 @@ source akv/bin/activate
 uv pip install -e .
 ```
 
-This installs AKVSgl, the patched SGLang and gateway, and Mooncake (`mooncake-transfer-engine-cuda13==0.3.13`). Mooncake is included for PD disaggregation; installing it does not enable PD. Git and the native build toolchain (including Cargo, make and Perl for the gateway) must be available. The build environment supplies protoc and builds vendored OpenSSL automatically.
+This installs akvsgl, the patched SGLang and gateway, and Mooncake (`mooncake-transfer-engine-cuda13==0.3.13`). Mooncake is included for PD disaggregation; installing it does not enable PD. Git and the native build toolchain (including Cargo, make and Perl for the gateway) must be available. The build environment supplies protoc and builds vendored OpenSSL automatically.
 
-Use uv for this installation: plain pip does not read the local dependency sources in `pyproject.toml`. No manual patch command or activation import is required. Generated upstream sources stay in `AKVSgl/.sglang/`; keep this directory while using the editable installation. Re-run the same install command after changing patches or native extensions. Clean generated trees are rebuilt when inputs change; the previous tree is preserved. Edits made directly inside the generated upstream tree are reported rather than overwritten.
+Use uv for this installation: plain pip does not read the local dependency sources in `pyproject.toml`. No manual patch command or activation import is required. Generated upstream sources stay in `akvsgl/.sglang/`; keep this directory while using the editable installation. Re-run the same install command after changing patches or native extensions. Clean generated trees are rebuilt when inputs change; the previous tree is preserved. Edits made directly inside the generated upstream tree are reported rather than overwritten.
 
 ## Quick Start
 
-AKVSGLang extends SGLang's OpenAI-compatible chat completion API.
+akvsgl extends SGLang's OpenAI-compatible chat completion API.
 
 1. Launch the server:
 
@@ -43,7 +43,7 @@ For the Drop/Repos example below, launch with page size 1 and a supported attent
 python -m sglang.launch_server --model-path Qwen/Qwen3-0.6B --page-size 1 --attention-backend flashinfer
 ```
 
-Both commands use SGLang's native entry point. Ordinary requests need no AKVSgl-specific launch flag.
+Both commands use SGLang's native entry point. Ordinary requests need no akvsgl-specific launch flag.
 
 | Server argument | Usage |
 | --- | --- |
