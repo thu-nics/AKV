@@ -2,6 +2,9 @@
 
 Configure trigger, selector, and reposition in main. The default composition
 uses drop_context to select old tool results and repositions every third tool batch.
+Pass --cache-tool semantic_drop for semantic awareness: the model labels each
+dropped tool result as failed, irrelevant or resolved with a reason, and PathMemory
+answers repeats of judged paths from those notes.
 """
 
 import argparse
@@ -16,7 +19,11 @@ from akv.agent.policies import (
     DropContextTool,
     ModelSelection,
     ModelTrigger,
+    PathMemory,
+    SemanticDropTool,
+    SemanticSelection,
     TurnReposition,
+    TurnTrigger,
 )
 from akv.agent.types import BackendTraceContext, JsonDict, ToolCall
 
@@ -102,6 +109,7 @@ def run_agent(
     max_steps: int = 12,
     max_tokens: int = 2048,
     cache_tool: CacheTool | None = None,
+    path_memory: PathMemory | None = None,
 ) -> str:
     if max_steps <= 0 or max_tokens <= 0:
         raise ValueError("max_steps and max_tokens must be positive")
@@ -131,7 +139,18 @@ def run_agent(
             "content": "Start at parcel-104. Follow next_record until null, then report the final delivery location.",
         },
     ]
-    if cache_tool:
+    if isinstance(cache_tool, SemanticDropTool):
+        history[0]["content"] += (
+            " Each record result includes its canonical message_id. Keep the newest record result "
+            "visible until you have read its exact next_record and received the successor result. "
+            f"Then call {cache_tool.name} for older record results that are no longer needed, giving "
+            "each a verdict and a reason. For 'resolved', the reason must keep the facts you still "
+            "need. Never guess a record ID or delete the newest result. "
+            "When next_record is null, report the delivery location immediately without another "
+            "cleanup call. "
+            "A scheduled result takes effect on the next model request."
+        )
+    elif cache_tool:
         history[0]["content"] += (
             " Each record result includes its canonical message_id. Keep the newest record result "
             "visible until you have read its exact next_record and received the successor result. "
@@ -211,10 +230,15 @@ def run_agent(
             # 4. Execute every call and append every result before the next generation.
             call_history = history[:-1]
             for call in calls:
-                content = execute_tool(call, handlers=handlers, messages=call_history)
-                formatter = result_formatters.get(call.name)
-                if formatter is not None:
-                    content = formatter(len(history), content)
+                # 4a. A repeat of a judged path is answered from its recorded note.
+                guard = path_memory.guard(call, call_history) if path_memory else None
+                if guard is not None:
+                    content = json.dumps(guard)
+                else:
+                    content = execute_tool(call, handlers=handlers, messages=call_history)
+                    formatter = result_formatters.get(call.name)
+                    if formatter is not None:
+                        content = formatter(len(history), content)
                 history.append(
                     {"role": "tool", "tool_call_id": call.id, "name": call.name, "content": content}
                 )
@@ -236,13 +260,24 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("local/demo-01"))
     parser.add_argument("--max-steps", type=int, default=12)
     parser.add_argument("--max-tokens", type=int, default=2048)
+    parser.add_argument("--cache-tool", choices=("drop_context", "semantic_drop"), default="drop_context")
     args = parser.parse_args()
-    cache_tool = DropContextTool()
-    policy = CachePolicy(
-        trigger=ModelTrigger(cache_tool),
-        selector=ModelSelection(cache_tool),
-        reposition=TurnReposition(after=3, every=3),
-    )
+    path_memory = None
+    if args.cache_tool == "semantic_drop":
+        cache_tool = SemanticDropTool()
+        path_memory = PathMemory(cache_tool)
+        policy = CachePolicy(
+            trigger=TurnTrigger(),
+            selector=SemanticSelection(cache_tool),
+            reposition=TurnReposition(after=3, every=3),
+        )
+    else:
+        cache_tool = DropContextTool()
+        policy = CachePolicy(
+            trigger=ModelTrigger(cache_tool),
+            selector=ModelSelection(cache_tool),
+            reposition=TurnReposition(after=3, every=3),
+        )
     run_agent(
         args.base_url,
         policy,
@@ -251,6 +286,7 @@ def main() -> None:
         max_steps=args.max_steps,
         max_tokens=args.max_tokens,
         cache_tool=cache_tool,
+        path_memory=path_memory,
     )
 
 

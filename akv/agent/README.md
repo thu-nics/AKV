@@ -30,6 +30,7 @@ akv/agent/
 │   ├── triggers.py           # When to select messages for deletion
 │   ├── selectors.py          # Which messages to delete
 │   ├── reposition.py         # When to compact retained positions
+│   ├── semantic.py           # Verdict-labelled drops, path ledger, and semantic selection
 │   ├── tools.py              # CacheTool interface and tool implementations
 │   └── utils/                # Request, message, and policy-context helpers
 │       ├── tokenization.py   # ModelTokenCounter entry point

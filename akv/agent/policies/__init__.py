@@ -2,6 +2,7 @@
 
 from .reposition import ModelReposition, TokenReposition, TurnReposition
 from .selectors import ModelSelection, TokenSelection, TurnSelection
+from .semantic import Embedder, PathMemory, PathRecord, SemanticDropTool, SemanticSelection
 from .tools import CacheTool, DropContextTool
 from .triggers import ModelTrigger, TokenTrigger, TurnTrigger
 
@@ -17,4 +18,9 @@ __all__ = [
     "TurnReposition",
     "TokenReposition",
     "ModelReposition",
+    "SemanticDropTool",
+    "SemanticSelection",
+    "PathMemory",
+    "PathRecord",
+    "Embedder",
 ]

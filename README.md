@@ -239,6 +239,39 @@ python examples/demo.py \
 
 As the demo runs, you can watch the model follow the chain of delivery records, manage its context by discarding results it no longer needs, and ultimately identify the parcel's final delivery location.
 
+## Semantic Awareness
+
+AKV System only appends, drops and repositions KV entries; it never reads text. On its own, a dropped path leaves no trace: the model cannot tell a dead end from a finished step, and if it takes the same path again the result must be recomputed. [semantic.py](akv/agent/policies/semantic.py) adds that judgement on the agent side, where the model already decides what to drop:
+
+| Component           | Purpose                                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SemanticDropTool`  | A `CacheTool` (`semantic_drop`) whose arguments label each dropped result `failed`, `irrelevant` or `resolved`, with a reason. The receipt stays in history and is never dropped, so the note outlives the KV entries.     |
+| `PathMemory`        | Rebuilds the ledger of judged paths from history and answers a repeated tool call from it via `guard(call, messages)`. Matching is exact on tool name and normalized JSON arguments, or fuzzy with an optional `Embedder`. |
+| `SemanticSelection` | A selector that drops model-labelled results and unwarned reruns of discarded paths, and can wrap a `fallback` selector while sparing results an `Embedder` finds relevant to the user's task.                             |
+
+```python
+from akv.agent import CachePolicy
+from akv.agent.policies import PathMemory, SemanticDropTool, SemanticSelection, TurnReposition, TurnTrigger
+
+tool = SemanticDropTool()
+memory = PathMemory(tool)
+policy = CachePolicy(
+    trigger=TurnTrigger(),
+    selector=SemanticSelection(tool),
+    reposition=TurnReposition(after=3, every=3),
+)
+
+# In the harness, before executing each tool call:
+guard = memory.guard(call, history)
+content = json.dumps(guard) if guard is not None else execute(call)
+```
+
+The model calls `semantic_drop` with, for example, `{"paths": [{"message_id": 3, "verdict": "failed", "reason": "route-A3 was cancelled"}]}`. A later `read_record(route-A3)` then returns the recorded reason instead of running again. Repeats of `failed` and `resolved` paths are guarded once by default (`max_guards=1`); if the model repeats the identical call after the warning, it runs, so data deliberately requested again can still be recovered. Dropped KV entries are never restored; the gain is that the model keeps the lesson and avoids repeating dead ends.
+
+`PathMemory` keeps no state beyond an embedding cache, so each conversation branch sees the ledger implied by its own history. An `Embedder` is any object with `embed(texts) -> list[vector]`; AKV does not ship a model.
+
+Run the [demo](examples/demo.py) with `--cache-tool semantic_drop` to use this composition; the default remains `drop_context`.
+
 ## Integrate with an Agent Harness
 
 Integrating AKV requires only one step: **process the final payload before sending request to the system**. After the harness serializes its history and tools, pass the payload to [CachePolicy.process](akv/agent/policy.py), then send the returned payload to AKV System.
